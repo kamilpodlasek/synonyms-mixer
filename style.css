@@ -1,0 +1,61 @@
+textarea {
+	resize: vertical;
+}
+
+#generate {
+	margin: 10px;
+}
+
+#downloadGenerated {
+	margin-top: 10px;
+}
+
+#alertBrackets {
+	position: relative;
+}
+
+@media (min-width: 1200px) {
+	.vertical-align {
+		display: flex;
+		align-items: center;
+	}
+	
+	#generate {
+		margin: 0;
+	}
+	
+	#alertBrackets {
+		position: absolute;
+		top: 55px;
+		left: 0;
+		padding: 5px;
+	}
+}
+
+.well {
+	margin-bottom: 10px;
+}
+
+.betweenWells {
+	margin: 0 0 8px 4px;
+}
+
+.marginTop {
+	margin-top: 10px;
+}
+
+.marginTopBig {
+	margin-top: 20px;
+}
+
+.greenBorder {
+	box-shadow: rgba(60, 200, 0, 0.6) 0px 0px 3px;
+}
+
+.yellowBorder {
+	box-shadow: rgba(220, 197, 0, 0.9) 0px 0px 3px;
+}
+
+.bg-grey {
+	background-color: #e8e8e8;
+}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Synonyms Mixer</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="style.css">
+	<script src="jszip.min.js"></script>
+	<script src="script.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('#inputText').on('input', function() {
+			if($('#inputText').val().length > 0) {
+				$('#generate').prop('disabled', false);
+				$('#download').prop('disabled', false);
+				if($('#outputText').hasClass('greenBorder'))
+					$('#outputText').removeClass('greenBorder').addClass('yellowBorder');
+			} else {
+				$('#generate').prop('disabled', true);
+				$('#download').prop('disabled', true);
+			}
+		});
+		
+		$('#outputText').on('input', function() {
+			if($(this).val() !== '')
+				$('#downloadGenerated').prop('disabled', false);
+			else
+				$('#downloadGenerated').prop('disabled', true);
+		});
+		
+		$('#generate').click(function() {
+			text = $('#inputText').val();
+			
+			if(checkInput(text)) {//if there is equal amount of left and right brackets
+				mixedText = mix(text);
+				$('#outputText').val(mixedText);
+				
+				$('#outputText').removeClass('yellowBorder').addClass('greenBorder');
+				$('#outputText').trigger('input');//to activate #outputText on input
+				$("#alertBrackets").addClass('hidden');
+			} else {
+				$("#alertBrackets").removeClass('hidden');
+			}
+		});
+		
+		$('#downloadGenerated').click(function() {
+			//creating an a element with article in base64 format, then clicking it programmatically to download the file
+			var element = document.createElement('a');
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent($('#outputText').val()));
+			
+			var date = new Date();
+			element.setAttribute('download', 'article'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+'_'+date.getHours()+'.'+date.getMinutes()+'.txt');
+			
+			element.style.display = 'none';
+			document.body.appendChild(element);
+			
+			element.click();
+			
+			document.body.removeChild(element);
+		});
+		
+		$('#download').click(function() {
+			text = $('#inputText').val();
+			
+			if(checkInput(text)) {//if there is equal amount of left and right brackets
+				$("#alertBrackets").addClass('hidden');
+				
+				var articlesAmount = $('#amount').val();
+
+				articlesAmount.replace(/\D/g,'');//delete non-numeric characters
+				
+				if(articlesAmount>10000)
+					articlesAmount = 10000;
+					
+				if(articlesAmount<1)
+					articlesAmount = 1;
+				
+				$('#amount').val(articlesAmount);
+				
+				var zip = new JSZip();
+				
+				for(var i=1; i<=articlesAmount; i++) {
+					mixedText = mix(text);
+					zip.file("article"+i+".txt", mixedText);
+				}
+				
+				zip.generateAsync({type:"base64"}).then(function(base64) {
+					var element = document.createElement('a');
+					element.setAttribute('href', 'data:application/zip;base64,'+base64);
+					
+					var date = new Date();
+					element.setAttribute('download', 'articles'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+'_'+date.getHours()+'.'+date.getMinutes()+'.zip');
+					
+					element.style.display = 'none';
+					document.body.appendChild(element);
+					
+					element.click();
+					
+					document.body.removeChild(element);
+				});
+			} else {
+				$("#alertBrackets").removeClass('hidden');
+			}
+		});
+	});
+	</script>
+</head>
+<body>
+	<div class="jumbotron text-center">
+		<h1>Synonyms Mixer</h1>
+		<p>SEO tool for generating unique articles</p>
+	</div>
+	
+	<div class="container text-center">
+		<div class="row vertical-align">
+			<div class="col-lg-5">
+				<h3>Text with synonyms:</h3>
+				<textarea id="inputText" class="form-control" rows="12"></textarea>
+			</div>
+			<div class="col-lg-2">
+				<button type="submit" id="generate" class="btn btn-primary btn-lg" disabled>Generate</button>
+				<div id="alertBrackets" class="alert alert-danger hidden" role="alert">Number of opening and closing brackets is not equal!</div>
+			</div>
+			<div class="col-lg-5">
+				<h3>Output article:</h3>
+				<textarea id="outputText" class="form-control" rows="12"></textarea>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-lg-5 col-xs-12 pull-right">
+				<button id="downloadGenerated" class="btn btn-default btn-sm pull-right" disabled>Download in TXT <span class="glyphicon glyphicon-download-alt"></span></button>
+			</div>
+			<div class="col-lg-5 col-xs-12 marginTop">
+				<h4>
+					Number of articles to generate:
+					<input type="number" id="amount" value="10" min="1" max="1000">
+					<button id="download" class="btn btn-default btn-sm" disabled>Download <span class="glyphicon glyphicon-download-alt"></span></button>
+				</h4>
+			</div>
+		</div>
+	</div>
+	
+	<div class="container-fluid marginTopBig bg-grey">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12 marginTop">
+					<h4>Example of use:</h4>
+					<div class="well">{Alice|Mary} has a {{white|black} cat|{big|small} dog|hamster} {named|whose name is} {Alfredo|Francisco}.</div>
+					<h4 class="betweenWells">gives</h4>
+					<div class="well">Mary has a black cat whose name is Alfredo.</div>
+				</div>
+			</div>
+		</div>
+		<footer class="text-right"><small>&#169 Copyright <span id="year"></span> <a href="http://kamilpodlasek.pl/" target="_blank">Kamil Podlasek</a></small></footer>
+		<script>
+			$("#year").text(new Date().getFullYear());
+		</script>
+	</div>
+</body>
+</html>
